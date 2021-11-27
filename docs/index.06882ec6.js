@@ -777,7 +777,7 @@ var X = D(j, [
     ["render", Q],
     ["__scopeId", "data-v-2bb57c42"],
 ]);
-let v = new Worker("/workwork.js");
+let v = new Worker("workwork.js");
 const ee = M({
         name: "App",
         components: { Modal: X },

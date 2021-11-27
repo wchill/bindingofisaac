@@ -1,4 +1,4 @@
-importScripts('/new_bag.js');
+importScripts('new_bag.js');
 
 function combRep(arr, l) {
   if(l === void 0) l = arr.length; // Length of the combinations
