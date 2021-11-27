@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
-from collections import namedtuple
+from collections import defaultdict
+from isaac_items import ITEMS
 
 
 CRAFTABLE_ITEM_POOLS = [
@@ -21,18 +22,15 @@ LOWERED_QUALITY_POOLS = ["devil", "angel", "secret"]
 ITEM_POOLS = {}
 
 
-ItemPoolEntry = namedtuple("ItemPoolEntry", ["item_id", "weight"])
-
-
 class ItemPool:
     def __init__(self, pool_id: int, pool_name: str):
         self.pool_id = pool_id
         self.pool_name = pool_name
-        self.items = []
         self.lowered_quality = pool_name in LOWERED_QUALITY_POOLS
+        self.quality_lists = defaultdict(list)
 
-    def add_item(self, item_id: int, weight: float) -> None:
-        self.items.append(ItemPoolEntry(item_id, weight))
+    def add_item(self, item_id: int, weight: float, quality: int) -> None:
+        self.quality_lists[quality].append((item_id, weight))
 
 
 with open("itempools.xml", "r") as f:
@@ -46,5 +44,7 @@ with open("itempools.xml", "r") as f:
             item_pool = ItemPool(idx, pool_name)
             for item in pool:
                 assert item.tag == "Item"
-                item_pool.add_item(int(item.attrib["Id"]), float(item.attrib["Weight"]))
+                item_id = int(item.attrib["Id"])
+                quality = ITEMS[item_id].quality
+                item_pool.add_item(item_id, float(item.attrib["Weight"]), quality)
             ITEM_POOLS[item_pool.pool_id] = item_pool

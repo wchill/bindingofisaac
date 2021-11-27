@@ -7,14 +7,16 @@ from crafting_calculator import get_result
 
 
 def check_output(items, seed):
+    """Verify result of crafting_calculator.py against original js implementation"""
     result = subprocess.run(
-        ["node", "new_bag.js", *[str(x) for x in items], str(seed)],
+        ["node", "verify_new_bag.js", *[str(x) for x in items], str(seed)],
         capture_output=True,
         text=True,
     )
     item = result.stdout.strip()
-    if int(item) != get_result(items, seed)[0]:
-        print(f"Failure when running {items}, {seed}")
+    res = get_result(items, seed)
+    if int(item) != res[0]:
+        print(f"Failure when running {items}, {seed}: js {item} py {res}")
         return False
     # print(item)
     return True

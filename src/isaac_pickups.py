@@ -1,9 +1,13 @@
 from collections import namedtuple
+from typing import Optional
 
 
-PickupEntry = namedtuple(
-    "PickupEntry", ["pickup_id", "pickup_name", "shorthand_name", "quality"]
-)
+class PickupEntry:
+    def __init__(self, pickup_id: int, pickup_name: str, shorthand_name: Optional[str], quality: int):
+        self.pickup_id = pickup_id
+        self.pickup_name = pickup_name
+        self.shorthand_name = shorthand_name
+        self.quality = quality
 
 
 PICKUP_LIST = [

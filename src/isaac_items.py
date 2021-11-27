@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from collections import namedtuple
+from typing import Optional
 
 
 _item_achievement_id_mapping = {}
@@ -7,9 +7,16 @@ _item_id_to_name_mapping = {}
 ITEMS = {}
 
 
-ItemListEntry = namedtuple(
-    "ItemListEntry", ["item_id", "name", "quality", "achievement_id", "quality_str"]
-)
+class ItemListEntry:
+    def __init__(self, item_id: int, name: str, quality: int, achievement_id: Optional[int]):
+        self.item_id = item_id
+        self.name = name
+        self.quality = quality
+        self.achievement_id = achievement_id
+
+    @property
+    def quality_str(self) -> str:
+        return '★' * self.quality + '☆' * (4 - self.quality)
 
 
 with open("items.xml", "r") as f, open("stringtable.sta", "r") as g:
@@ -39,6 +46,4 @@ with open("items_metadata.xml", "r") as f:
             item_name = _item_id_to_name_mapping[item_id]
             item_quality = int(item.attrib["quality"])
             item_achievement_id = _item_achievement_id_mapping.get(item_id)
-            ITEMS[item_id] = ItemListEntry(
-                item_id, item_name, item_quality, item_achievement_id, '★' * item_quality + '☆' * (4 - item_quality)
-            )
+            ITEMS[item_id] = ItemListEntry(item_id, item_name, item_quality, item_achievement_id)

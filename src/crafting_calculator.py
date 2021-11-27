@@ -1,4 +1,5 @@
 import argparse
+import bisect
 import itertools
 import math
 import time
@@ -80,31 +81,21 @@ def get_result(pickup_array: List[int], seed: int) -> Tuple[int, int]:
             if score >= min_score:
                 break
 
-        for item_pool_entry in item_pool.items:
-            item_id = item_pool_entry.item_id
-            assert 0 <= item_id <= collectible_count, "invalid item id"
-            item_config = ITEMS[item_id]
-            if (
-                item_config.quality >= quality_min
-                and item_config.quality <= quality_max
-            ):
-                item_weight = pool_weight * item_pool_entry.weight
-                all_weight += item_weight
-                collectible_list[item_id] += item_weight
+        for quality in range(quality_min, quality_max + 1):
+            for item_id, item_weight in item_pool.quality_lists[quality]:
+                collectible_list[item_id] += pool_weight * item_weight
+
+    cumulative_weights = list(itertools.accumulate(collectible_list))
+    all_weight = sum(collectible_list)
 
     for _ in range(20):
         currentSeed = rng_next(currentSeed, 6)
         remains = float(currentSeed) * 2.3283062e-10 * all_weight
 
-        selected_item_id = None
-        for current_select in range(collectible_count):
-            if collectible_list[current_select] > remains:
-                selected_item_id = current_select
-                break
-            remains -= collectible_list[current_select]
-
-        if selected_item_id is None:
-            continue
+        if remains >= all_weight:
+            break
+        
+        selected_item_id = bisect.bisect_right(cumulative_weights, remains)
 
         item_config = ITEMS[selected_item_id]
         if item_config.achievement_id is None or is_achievement_unlocked(
@@ -127,6 +118,7 @@ def find_item_id(seed_string: str, pickup_list: List[int]) -> None:
     item_id, quality_sum = get_result(pickup_list, seed)
     item = ITEMS[item_id]
     print(f"SEED: {seed_string}")
+    print()
     print(f"[ {PICKUP_LIST[pickup_list[0]].pickup_name}")
     for pickup_id in pickup_list[1:-1]:
         print(f"  {PICKUP_LIST[pickup_id].pickup_name}")
@@ -139,24 +131,16 @@ def find_items_for_pickups(seed_string: str, pickup_list: List[int]) -> None:
     seed = string_to_seed(seed_string)
     total_recipe_count = int(math.factorial(len(pickup_list) + 7) / (math.factorial(len(pickup_list) - 1) * math.factorial(8)))
     print(f"Calculating {total_recipe_count} recipes...")
-    
-    finished_count = 0
-    craftable_set = set()
-    def done_callback(future):
-        nonlocal finished_count
-        assert future.exception() is None
-        assert future.result() is not None
-        craftable_set.add(future.result()[0])
-        finished_count += 1
-        print_progress(finished_count, total_recipe_count)
 
+    craftable_set = set()
     with ProcessPoolExecutor() as executor:
-        for combination in itertools.combinations_with_replacement(pickup_list, 8):
-            future = executor.submit(get_result, combination, seed)
-            future.add_done_callback(done_callback)
+        results = executor.map(get_result, itertools.combinations_with_replacement(pickup_list, 8), itertools.repeat(seed), chunksize=32)
+        for result in results:
+            craftable_set.add(result[0])
 
     print(f"SEED: {seed_string}")
-    print("The following items are craftable with the given pickup types:")
+    print()
+    print(f"The following {len(craftable_set)} items are craftable with the given pickup types:")
     print(f"[ {PICKUP_LIST[pickup_list[0]].pickup_name}")
     for pickup_id in pickup_list[1:-1]:
         print(f"  {PICKUP_LIST[pickup_id].pickup_name}")
@@ -172,28 +156,16 @@ def find_recipes_for_item(seed_string: str, pickup_list: List[int], item_id: int
     total_recipe_count = int(math.factorial(len(pickup_list) + 7) / (math.factorial(len(pickup_list) - 1) * math.factorial(8)))
     print(f"Calculating {total_recipe_count} recipes...")
     
-    finished_count = 0
-    future_args = {}
     item_recipes = []
-    def done_callback(future):
-        nonlocal finished_count
-        assert future.exception() is None
-        assert future.result() is not None
-        crafted_item_id, quality_sum = future.result()
-        if item_id == crafted_item_id:
-            item_recipes.append((future_args[future], quality_sum))
-        future_args.pop(future)
-        finished_count += 1
-        print_progress(finished_count, total_recipe_count)
-
     with ProcessPoolExecutor() as executor:
-        for combination in itertools.combinations_with_replacement(pickup_list, 8):
-            future = executor.submit(get_result, combination, seed)
-            future_args[future] = combination
-            future.add_done_callback(done_callback)
+        results = executor.map(get_result, itertools.combinations_with_replacement(pickup_list, 8), itertools.repeat(seed), chunksize=32)
+        for result in results:
+            if item_id == result[0]:
+                item_recipes.append(result)
 
     item = ITEMS[item_id]
     print(f"SEED: {seed_string}")
+    print()
     print(f"The following recipes are viable for {item.name} (id {item.item_id} {item.quality_str}) with the given pickup types:")
     item_recipes.sort(key=lambda tup: tup[1])
     for recipe, quality_sum in item_recipes:
