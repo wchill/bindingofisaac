@@ -1,3 +1,5 @@
+import re
+
 VALID_SEED_CHARS = "ABCDEFGHJKLMNPQRSTWXYZ01234V6789"
 
 RNG_OFFSETS = [
@@ -258,12 +260,14 @@ def string_to_seed(seed: str):
     if len(seed) == 9 and seed[4] == " ":
         seed = re.sub(" ", "", seed)
 
+    seed = seed.upper()
+
     assert len(seed) == 8
 
     char_to_int = {VALID_SEED_CHARS[i]: i for i in range(len(VALID_SEED_CHARS))}
     num_seed = []
     for char in seed:
-        assert char.upper() in VALID_SEED_CHARS
+        assert char in VALID_SEED_CHARS
         num_seed.append(char_to_int[char.upper()])
 
     v8 = 0

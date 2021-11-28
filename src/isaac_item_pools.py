@@ -30,7 +30,7 @@ class ItemPool:
         self.quality_lists = defaultdict(list)
 
     def add_item(self, item_id: int, weight: float, quality: int) -> None:
-        self.quality_lists[quality].append((item_id, weight))
+        self.quality_lists[quality].append((item_id, int(weight * 100)))
 
 
 with open("itempools.xml", "r") as f:
