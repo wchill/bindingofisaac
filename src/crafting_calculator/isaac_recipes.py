@@ -1,7 +1,8 @@
 import xml.etree.ElementTree as ET
 from typing import List, Optional
+import os
 
-from isaac_pickups import PICKUP_LIST
+from .isaac_pickups import PICKUP_LIST
 
 
 pickup_shorthand_to_id_mapping = {
@@ -12,6 +13,7 @@ pickup_shorthand_to_id_mapping = {
 
 
 HARDCODED_RECIPES = {}
+RECIPES_XML_PATH = os.path.join(os.path.dirname(__file__), "recipes.xml")
 
 
 class HardcodedRecipe:
@@ -21,7 +23,7 @@ class HardcodedRecipe:
         self.pickup_num = self.convert_pickup_list_to_int64(self.pickups)
 
     @staticmethod
-    def convert_pickup_list_to_int64(pickups: List[str]) -> int:
+    def convert_pickup_list_to_int64(pickups: List[int]) -> int:
         assert len(pickups) == 8
         sorted_array = sorted(pickups, reverse=True)
         accumulator = 0
@@ -32,12 +34,12 @@ class HardcodedRecipe:
         return accumulator
 
 
-def find_hardcoded_recipe(pickups: List[str]) -> Optional[HardcodedRecipe]:
+def find_hardcoded_recipe(pickups: List[int]) -> Optional[HardcodedRecipe]:
     pickup_num = HardcodedRecipe.convert_pickup_list_to_int64(pickups)
     return HARDCODED_RECIPES.get(pickup_num)
 
 
-with open("recipes.xml", "r") as f:
+with open(RECIPES_XML_PATH, "r", encoding="utf-8") as f:
     recipes = ET.fromstring(f.read())
     assert recipes.tag == "recipes"
 

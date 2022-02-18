@@ -1,10 +1,14 @@
 import xml.etree.ElementTree as ET
+import os
 from typing import Optional
 
 
 _item_achievement_id_mapping = {}
 _item_id_to_name_mapping = {}
 ITEMS = {}
+ITEMS_XML_PATH = os.path.join(os.path.dirname(__file__), "items.xml")
+STRINGTABLE_STA_PATH = os.path.join(os.path.dirname(__file__), "stringtable.sta")
+ITEMS_METADATA_XML_PATH = os.path.join(os.path.dirname(__file__), "items_metadata.xml")
 
 
 class ItemListEntry:
@@ -19,7 +23,7 @@ class ItemListEntry:
         return '★' * self.quality + '☆' * (4 - self.quality)
 
 
-with open("items.xml", "r") as f, open("stringtable.sta", "r") as g:
+with open(ITEMS_XML_PATH, "r", encoding="utf-8") as f, open(STRINGTABLE_STA_PATH, "r", encoding="utf-8") as g:
     items = ET.fromstring(f.read())
     string_table = ET.fromstring(g.read())
     assert items.tag == "items"
@@ -36,7 +40,7 @@ with open("items.xml", "r") as f, open("stringtable.sta", "r") as g:
             assert item.tag in ["trinket", "null"]
 
 
-with open("items_metadata.xml", "r") as f:
+with open(ITEMS_METADATA_XML_PATH, "r", encoding="utf-8") as f:
     items_metadata = ET.fromstring(f.read())
     assert items_metadata.tag == "items"
 

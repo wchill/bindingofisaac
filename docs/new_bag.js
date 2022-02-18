@@ -1929,17 +1929,17 @@ function get_result(input_array, gameStartSeed){
                 else if ( score > 26 )
                 {
                     quality_max = 4;
-                    quality_min = 3;
+                    quality_min = 2;
                 }
                 else if ( score > 22 )
                 {
                     quality_max = 4;
-                    quality_min = 2;
+                    quality_min = 1;
                 }
                 else if ( score > 18 )
                 {
                     quality_max = 3;
-                    quality_min = 2;
+                    quality_min = 1;
                 }
                 else if ( score > 14 )
                 {

@@ -6,22 +6,22 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import List, Tuple
 
-from isaac_rng import rng_next, string_to_seed
-from isaac_item_pools import ITEM_POOLS
-from isaac_items import ITEMS
-from isaac_pickups import PICKUP_LIST
-from isaac_recipes import find_hardcoded_recipe
+from .isaac_rng import rng_next, string_to_seed
+from .isaac_item_pools import ITEM_POOLS
+from .isaac_items import ITEMS
+from .isaac_pickups import PICKUP_LIST
+from .isaac_recipes import find_hardcoded_recipe
 
 
 QUALITY_RANGES = [
-    (0, 0, 1),
-    (9, 0, 2),
-    (15, 1, 2),
-    (19, 2, 3),
-    (23, 2, 4),
-    (27, 3, 4),
-    (31, 3, 4),
-    (35, 4, 4),
+    (0, 0, 1),      # 0-8   -> quality 0-1
+    (9, 0, 2),      # 9-14  -> quality 0-2
+    (15, 1, 2),     # 15-18 -> quality 1-2
+    (19, 1, 3),     # 19-22 -> quality 1-3
+    (23, 1, 4),     # 23-26 -> quality 1-4
+    (27, 2, 4),     # 27-30 -> quality 2-4
+    (31, 3, 4),     # 31-34 -> quality 3-4
+    (35, 4, 4),     # 35+   -> quality 4
 ]
 
 
