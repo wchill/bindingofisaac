@@ -131,7 +131,7 @@ def get_pool(uc, address, size, user_data):
     global var_ptr
     pool_id = uc.reg_read(UC_ARM64_REG_W1)
     # no idea how to interpret the itempool struct. just putting something that works.
-    # itempool entries are 24 bytes? id (uint32), weight (float32), decreaseby (float32), removeon (float32), next (ptr)
+    # itempool entries are (maybe?) id (uint32), weight (float32), decreaseby (float32), removeon (float32), next (ptr)
     item_pool_ptr = var_ptr
     var_ptr += 0x18
 
@@ -165,6 +165,7 @@ def get_collectible(uc, address, size, user_data):
         return
 
     item_config_ptr = var_ptr
+    # actual size is something like 0x80 bytes, but I put 0x100 here to be safe.
     var_ptr += 0x100
     # no idea how to interpret the itemconfig struct. just putting something that works.
     # offsets 0xcc and 0xc8 somehow correspond to item quality.

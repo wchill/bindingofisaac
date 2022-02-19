@@ -136,6 +136,16 @@ class TestCraftingCalculator:
             "Key",
             "Penny",
         ]), 142),
+        ("7aldagay", pickup_names_to_list([
+            "Red Heart",
+            "Eternal Heart",
+            "Eternal Heart",
+            "Key",
+            "Golden Key",
+            "Bomb",
+            "Penny",
+            "Golden Penny",
+        ]), 380),
     ])
     def test_calculation(self, seed_string, pickups, correct_id):
         seed = string_to_seed(seed_string)
