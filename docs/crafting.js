@@ -338,7 +338,7 @@ async function GetItemData() {
     let version = (location.hash || "#1.7").substr(1);
     if (item_data[version] === undefined) {
         console.log(`Fetching game data for ${version}`);
-        let versioned_data = await fetch(`/gamedata/v${version}/itemdata.json`);
+        let versioned_data = await fetch(`gamedata/v${version}/itemdata.json`);
         item_data[version] = await versioned_data.json();
     }
     return item_data[version];
