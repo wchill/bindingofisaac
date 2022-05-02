@@ -1,4 +1,4 @@
-importScripts('new_bag.js');
+importScripts(`crafting.js`);
 
 function combRep(arr, l) {
   if(l === void 0) l = arr.length; // Length of the combinations
@@ -17,7 +17,7 @@ function combRep(arr, l) {
   return results;                  // Return results
 }
 
-self.addEventListener('message', function (MessageEvent) {
+self.addEventListener('message', async function (MessageEvent) {
   //let itemId = get_result(MessageEvent.data.charArr, str2seed(MessageEvent.data.seed))
 
   let t0 = this.performance.now();
@@ -36,9 +36,9 @@ self.addEventListener('message', function (MessageEvent) {
 
   // do the magic
   while (i < len) {
-    let id = get_result(result[i], seed);
+    let id = await get_result(result[i], seed);
     let itemIndex = recipeArr.findIndex(e => e.x === id);
-    
+
     if (itemIndex > -1) {
       if (recipeArr[itemIndex].y.length < 20) recipeArr[itemIndex].y.push(result[i]);
     } else {
@@ -50,7 +50,7 @@ self.addEventListener('message', function (MessageEvent) {
       })
     }
 
-    
+
     i++
   }
 
@@ -62,6 +62,6 @@ self.addEventListener('message', function (MessageEvent) {
     time: t1 - t0,
   })
 
-  
-  
+
+
 }, false);

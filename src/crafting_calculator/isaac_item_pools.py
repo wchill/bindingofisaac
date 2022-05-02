@@ -48,7 +48,6 @@ class ItemPool:
 
         with open(path, "r", encoding="utf-8") as f:
             item_pools = ET.fromstring(f.read())
-
             for idx, pool in enumerate(item_pools):
                 assert pool.tag == "Pool"
                 pool_name = pool.attrib["Name"]

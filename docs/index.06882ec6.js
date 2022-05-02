@@ -835,12 +835,12 @@ const ee = M({
                         return;
                     }
                     e.showSeedError = !1;
-                    try {
-                        let l = get_result(m, str2seed(e.seed));
+                    get_result(m, str2seed(e.seed)).then((l) => {
                         (e.selectedItem = l), (e.selectedItemName = h(l)), (o.className = `m-4 sprite i${l}`);
-                    } catch {
+                    }).catch((err) => {
+                        console.error(err);
                         b(), (e.showSeedError = !0), (e.seedErrorText = "Invalid seed! Please enter the one from your pause menu in-game");
-                    }
+                    })
                 },
                 r = (o) => {
                     const m = document.querySelectorAll(".craftslot.empty");
@@ -897,7 +897,7 @@ const ee = M({
     ie = { class: "mb-8 pb-8 border-b border-gray-600" },
     te = t("h1", { class: "text-3xl font-bold mb-2" }, "Bag of Crafting Recipes", -1),
     de = R(
-        '<div class="w-full md:w-2/3"><div class="bg-purple-500 rounded p-3 mt-3"> You can now <strong>bulk generate recipes</strong> for every item <span class="font-thin">\u{1F440}</span> using the <strong>Recipe Generator</strong> below. Don&#39;t forget to enter your seed first! </div><div class="w-full md:w-2/3"><div class="bg-red-500 rounded p-3 mt-3"> This modified calculator only works for the <strong>Switch</strong> version of Repentance (version 1.5) while the guy who runs the real platinumgod.co.uk updates his site. If this calculator returns a bad result, <a href="https://github.com/wchill/bindingofisaac/issues/1">file a bug report here.</a></div></div><h2 class="text-2xl font-bold mt-8 mb-2"><span class="font-thin">\u{1F4A1}</span> Before you start...</h2><p class="mb-4">Enter the seed of your current run e.g. JKD9 Z0C9</p>',
+        '<div class="w-full md:w-2/3"><div class="bg-purple-500 rounded p-3 mt-3"> You can now <strong>bulk generate recipes</strong> for every item <span class="font-thin">\u{1F440}</span> using the <strong>Recipe Generator</strong> below. Don&#39;t forget to enter your seed first! </div><div class="w-full md:w-2/3"><div class="bg-red-500 rounded p-3 mt-3"> This modified calculator only works for the latest <strong>Switch</strong> version of Repentance (for other versions add <strong>#1.5</strong> etc to the URL). If this calculator returns a bad result, <a href="https://github.com/wchill/bindingofisaac/issues/1">file a bug report here.</a></div></div><h2 class="text-2xl font-bold mt-8 mb-2"><span class="font-thin">\u{1F4A1}</span> Before you start...</h2><p class="mb-4">Enter the seed of your current run e.g. JKD9 Z0C9</p>',
         3
     ),
     oe = { class: "flex mb-2" },
