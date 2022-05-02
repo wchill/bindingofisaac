@@ -1,0 +1,20 @@
+exclude: ^src/crafting_calculator/gamedata/
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.2.0
+  hooks:
+    - id: trailing-whitespace
+    - id: mixed-line-ending
+    - id: end-of-file-fixer
+    - id: check-yaml
+    - id: check-json
+    - id: pretty-format-json
+      args: ['--autofix']
+    - id: check-merge-conflict
+    - id: check-case-conflict
+    - id: check-docstring-first
+- repo: https://github.com/psf/black
+  rev: 22.3.0
+  hooks:
+    - id: black
+      name: black

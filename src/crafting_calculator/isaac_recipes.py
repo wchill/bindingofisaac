@@ -1,7 +1,8 @@
 import xml.etree.ElementTree as ET
-from typing import List, Optional
-import os
+from functools import lru_cache
+from typing import Dict, List, Optional
 
+from .utilities import get_gamedata_path
 from .isaac_pickups import PICKUP_LIST
 
 
@@ -13,7 +14,6 @@ pickup_shorthand_to_id_mapping = {
 
 
 HARDCODED_RECIPES = {}
-RECIPES_XML_PATH = os.path.join(os.path.dirname(__file__), "recipes.xml")
 
 
 class HardcodedRecipe:
@@ -33,18 +33,28 @@ class HardcodedRecipe:
 
         return accumulator
 
+    @staticmethod
+    @lru_cache()
+    def load_hardcoded_recipes(game_version: str) -> Dict[int, "HardcodedRecipe"]:
+        recipes_xml_path = get_gamedata_path(game_version, "recipes.xml")
+        output = {}
 
-def find_hardcoded_recipe(pickups: List[int]) -> Optional[HardcodedRecipe]:
+        with open(recipes_xml_path, "r", encoding="utf-8") as f:
+            recipes = ET.fromstring(f.read())
+            assert recipes.tag == "recipes"
+
+            for recipe in recipes:
+                recipe_entry = HardcodedRecipe(
+                    int(recipe.attrib["output"]), recipe.attrib["input"]
+                )
+                output[recipe_entry.pickup_num] = recipe_entry
+
+        return output
+
+
+def find_hardcoded_recipe(
+    game_version: str, pickups: List[int]
+) -> Optional[HardcodedRecipe]:
     pickup_num = HardcodedRecipe.convert_pickup_list_to_int64(pickups)
-    return HARDCODED_RECIPES.get(pickup_num)
-
-
-with open(RECIPES_XML_PATH, "r", encoding="utf-8") as f:
-    recipes = ET.fromstring(f.read())
-    assert recipes.tag == "recipes"
-
-    for recipe in recipes:
-        recipe_entry = HardcodedRecipe(
-            int(recipe.attrib["output"]), recipe.attrib["input"]
-        )
-        HARDCODED_RECIPES[recipe_entry.pickup_num] = recipe_entry
+    recipes = HardcodedRecipe.load_hardcoded_recipes(game_version)
+    return recipes.get(pickup_num)

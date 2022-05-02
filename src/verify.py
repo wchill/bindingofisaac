@@ -7,7 +7,7 @@ from crafting_calculator import get_result
 
 
 def check_output(items, seed):
-    """Verify result of crafting_calculator.py against original js implementation"""
+    """Verify result of calculator.py against original js implementation"""
     result = subprocess.run(
         ["node", "verify_new_bag.js", *[str(x) for x in items], str(seed)],
         capture_output=True,

@@ -1,9 +1,14 @@
-from collections import namedtuple
 from typing import Optional
 
 
 class PickupEntry:
-    def __init__(self, pickup_id: int, pickup_name: str, shorthand_name: Optional[str], quality: int):
+    def __init__(
+        self,
+        pickup_id: int,
+        pickup_name: str,
+        shorthand_name: Optional[str],
+        quality: int,
+    ):
         self.pickup_id = pickup_id
         self.pickup_name = pickup_name
         self.shorthand_name = shorthand_name
