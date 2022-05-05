@@ -1,1 +1,1 @@
-recursive-include src/gamedata itempools.xml items.xml items_metadata.xml recipes.xml stringtable.sta
+graft src/crafting_calculator/gamedata

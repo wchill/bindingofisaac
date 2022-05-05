@@ -1,19 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="https://platinumgod.co.uk/images/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" href="https://platinumgod.co.uk/images/favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Bag of Crafting Combinations (Repentance) - Isaac Cheat Sheet</title>
-    <meta name="description" content="Documenting the different combinations of items available through the Bag of Crafting item in The Binding of Isaac: Repentance.">
-    <script type="text/javascript" src="//cdn.thisiswaldo.com/static/js/4191.js"></script>
+    <meta name="description"
+          content="Documenting the different combinations of items available through the Bag of Crafting item in The Binding of Isaac: Repentance.">
     <script type="module" crossorigin src="index.06882ec6.js"></script>
     <link rel="modulepreload" href="vendor.7cfc0e3b.js">
     <link rel="stylesheet" href="index.424c35f3.css">
-  </head>
-  <body class="bg-gray-800">
-    <div id="app"></div>
-    <script src="crafting.js"></script>
+</head>
+<body class="bg-gray-800">
+<!-- TODO: rewrite the index.js bc it's minified and editing stuff is painful -->
+<div id="app"></div>
+<script>
+    function locationHashChanged() {
+        let elem = document.querySelector("#version-select");
 
-  </body>
+        if (elem !== undefined) {
+            try {
+                let version = location.hash.substr(1);
+                let options = Array.from(elem.options);
+                let optionToSelect = options.find(item => item.value === version);
+                if (optionToSelect === undefined) {
+                    alert(`${version} is not a valid version, using default.`);
+                    optionToSelect = options.find(item => item.getAttribute("default") === "true");
+                    if (optionToSelect !== undefined) {
+                        location.hash = '#' + optionToSelect.value;
+                    }
+                    return;
+                }
+                optionToSelect.selected = true;
+            } catch (err) {
+                console.error(err);
+                alert(err);
+            }
+        }
+    }
+
+    // Select the node that will be observed for mutations
+    const targetNode = document.getElementById("app");
+
+    // Options for the observer (which mutations to observe)
+    const config = {childList: true, subtree: true};
+
+    // Callback function to execute when mutations are observed
+    const callback = function (mutationsList, observer) {
+        // Use traditional 'for loops' for IE 11
+        for (const mutation of mutationsList) {
+            if (mutation.type !== 'childList') {
+                continue;
+            }
+            const addedNodes = Array.from(mutation.addedNodes);
+
+            if (addedNodes) {
+                let elem = document.querySelector("#version-select");
+                if (elem === undefined) {
+                    continue;
+                }
+
+                observer.disconnect();
+
+                console.log("Fetching list of game versions");
+                fetch("gamedata/versions.json").then(response => {
+                    return response.json()
+                }).then(version_data => {
+                    let platforms = version_data["platforms"];
+                    let defaultVersion = version_data["default"];
+                    for (let platformName in platforms) {
+                        let platform = platforms[platformName];
+                        let name = platform["name"];
+                        let versions = platform["versions"];
+
+                        let platformElem = new Option(`──${name}──`);
+                        platformElem.disabled = true;
+                        elem.appendChild(platformElem);
+
+                        for (let version in versions) {
+                            let versionElem = new Option(`${name} ${version}`, `${platformName}/${version}`);
+                            if (defaultVersion === versionElem.value) {
+                                versionElem.selected = true;
+                                versionElem.setAttribute("default", "true");
+                            }
+                            elem.appendChild(versionElem);
+                        }
+                    }
+
+                    elem.addEventListener("change", event => {
+                        location.hash = '#' + event.target.value;
+                    })
+
+                    let shouldSelect = (location.hash || '#' + defaultVersion).substr(1);
+                    location.hash = '#' + shouldSelect;
+
+                    locationHashChanged();
+                    window.onhashchange = locationHashChanged;
+                });
+            }
+        }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
+</script>
+<script src="crafting.js"></script>
+</body>
 </html>

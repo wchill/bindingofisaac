@@ -1,6 +1,6 @@
 import time
 import argparse
-from .utilities import LATEST_GAME_VERSION, GAME_VERSIONS
+from .utilities import DEFAULT_GAME_VERSION, DEFAULT_PLATFORM, get_all_game_versions, parse_game_version_string
 from .calculator import (
     find_items_for_pickups,
     find_recipes_for_item,
@@ -40,8 +40,8 @@ def main():
         "--game-version",
         required=False,
         help="The game version to use.",
-        default=LATEST_GAME_VERSION,
-        choices=GAME_VERSIONS,
+        default=f"{DEFAULT_PLATFORM}/{DEFAULT_GAME_VERSION}",
+        choices=get_all_game_versions(),
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -61,24 +61,25 @@ def main():
         help="Find all items that are uncraftable using this given set of pickups.",
     )
     args = parser.parse_args()
+    platform, game_version = parse_game_version_string(args.game_version)
 
     t0 = time.monotonic()
     if args.find_pickup_recipes:
         pickups = list(set(args.pickups))
-        find_items_for_pickups(args.game_version, args.seed, pickups)
+        find_items_for_pickups(platform, game_version, args.seed, pickups)
     elif args.find_item_recipes:
         pickups = list(set(args.pickups))
         find_recipes_for_item(
-            args.game_version, args.seed, pickups, args.find_item_recipes
+            platform, game_version, args.seed, pickups, args.find_item_recipes
         )
     elif args.find_uncraftable_items:
         pickups = list(set(args.pickups))
-        find_uncraftable_items(args.game_version, args.seed, pickups)
+        find_uncraftable_items(platform, game_version, args.seed, pickups)
     else:
         assert (
             len(args.pickups) == 8
         ), "You must provide 8 pickup IDs when calculating a single result."
-        find_item_id(args.game_version, args.seed, args.pickups)
+        find_item_id(platform, game_version, args.seed, args.pickups)
 
     t1 = time.monotonic()
     print()

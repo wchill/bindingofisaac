@@ -1,0 +1,1 @@
+{"default": "pc/v1.7.8a", "platforms": {"switch": {"name": "Switch", "versions": {"v1.5": 1, "v1.6": 1, "v1.7": 3}}, "pc": {"name": "PC", "versions": {"v1.7.7a": 2, "v1.7.8a": 3}}}}

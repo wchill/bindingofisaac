@@ -35,8 +35,8 @@ class HardcodedRecipe:
 
     @staticmethod
     @lru_cache()
-    def load_hardcoded_recipes(game_version: str) -> Dict[int, "HardcodedRecipe"]:
-        recipes_xml_path = get_gamedata_path(game_version, "recipes.xml")
+    def load_hardcoded_recipes(platform: str, game_version: str) -> Dict[int, "HardcodedRecipe"]:
+        recipes_xml_path = get_gamedata_path(platform, game_version, "recipes.xml")
         output = {}
 
         with open(recipes_xml_path, "r", encoding="utf-8") as f:
@@ -53,8 +53,8 @@ class HardcodedRecipe:
 
 
 def find_hardcoded_recipe(
-    game_version: str, pickups: List[int]
+    platform: str, game_version: str, pickups: List[int]
 ) -> Optional[HardcodedRecipe]:
     pickup_num = HardcodedRecipe.convert_pickup_list_to_int64(pickups)
-    recipes = HardcodedRecipe.load_hardcoded_recipes(game_version)
+    recipes = HardcodedRecipe.load_hardcoded_recipes(platform, game_version)
     return recipes.get(pickup_num)

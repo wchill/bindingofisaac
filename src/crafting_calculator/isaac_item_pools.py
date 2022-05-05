@@ -41,9 +41,9 @@ class ItemPool:
         self.quality_lists[quality].append((item_id, int(weight * 100)))
 
     @staticmethod
-    def load_item_pools(game_version: str) -> Dict[int, "ItemPool"]:
-        path = get_gamedata_path(game_version, "itempools.xml")
-        items = ItemListEntry.load_item_list(game_version)
+    def load_item_pools(platform: str, game_version: str) -> Dict[int, "ItemPool"]:
+        path = get_gamedata_path(platform, game_version, "itempools.xml")
+        items = ItemListEntry.load_item_list(platform, game_version)
         output = {}
 
         with open(path, "r", encoding="utf-8") as f:

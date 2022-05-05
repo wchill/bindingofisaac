@@ -19,10 +19,10 @@ class ItemListEntry:
 
     @staticmethod
     @lru_cache()
-    def load_item_list(game_version: str) -> Dict[int, "ItemListEntry"]:
-        items_xml_path = get_gamedata_path(game_version, "items.xml")
-        stringtable_sta_path = get_gamedata_path(game_version, "stringtable.sta")
-        items_metadata_xml_path = get_gamedata_path(game_version, "items_metadata.xml")
+    def load_item_list(platform: str, game_version: str) -> Dict[int, "ItemListEntry"]:
+        items_xml_path = get_gamedata_path(platform, game_version, "items.xml")
+        stringtable_sta_path = get_gamedata_path(platform, game_version, "stringtable.sta")
+        items_metadata_xml_path = get_gamedata_path(platform, game_version, "items_metadata.xml")
 
         output = {}
         item_achievement_id_mapping = {}
