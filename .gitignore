@@ -343,4 +343,5 @@ $RECYCLE.BIN/
 .idea/
 
 # Don't include game binaries in this
-Repentance.nro
+*.nro
+*.exe

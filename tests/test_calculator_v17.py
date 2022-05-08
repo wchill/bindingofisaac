@@ -1,7 +1,7 @@
 import pytest
 from crafting_calculator.isaac_pickups import PICKUP_LIST
 from crafting_calculator.isaac_rng import string_to_seed
-from crafting_calculator.crafting_calculator import get_result
+from crafting_calculator.calculator import get_result
 
 
 def pickup_names_to_list(pickup_list):
@@ -14,7 +14,7 @@ def pickup_names_to_list(pickup_list):
 
 
 @pytest.xfail("Haven't recalculated correct results yet for 1.7")
-class TestCraftingCalculator17:
+class TestCraftingCalculatorSwitch17:
     @pytest.mark.parametrize(
         "seed_string,pickups,correct_id",
         [
@@ -230,7 +230,7 @@ class TestCraftingCalculator17:
     )
     def test_calculation(self, seed_string, pickups, correct_id):
         seed = string_to_seed(seed_string)
-        item_id, quality_sum = get_result("1.7", pickups, seed)
+        recipe, item_id, quality_sum = get_result("switch", "v1.7", pickups, seed)
         assert item_id == correct_id
 
 

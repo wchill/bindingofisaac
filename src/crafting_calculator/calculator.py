@@ -12,14 +12,10 @@ from .isaac_recipes import find_hardcoded_recipe
 from .utilities import get_quality_ranges, hardcoded_recipe_requires_unlock
 
 
-def is_achievement_unlocked(achievement_id):
-    # TODO: implement check for achievement ids
-    return True
-
-
 def get_result(
     platform: str, game_version: str, pickup_array: List[int], seed: int
-) -> Tuple[List[int], int, int]:
+) -> Tuple[List[int], List[int], int]:
+    candidates = []
     pickup_count = [0] * len(PICKUP_LIST)
     quality_sum = 0
     for pickup_id in pickup_array:
@@ -31,13 +27,11 @@ def get_result(
 
     hardcoded_recipe = find_hardcoded_recipe(platform, game_version, pickup_array)
     if hardcoded_recipe:
-        # v1.7.8 requires that hardcoded items are now unlocked. Check if achievement is unlocked
+        # v1.7.8 requires that hardcoded items are now unlocked. If there's an achievement id, search for more candidates
         if hardcoded_recipe_requires_unlock(platform, game_version):
-            achievement_id = items[hardcoded_recipe.item_id].achievement_id
-            if achievement_id is not None and is_achievement_unlocked(achievement_id):
-                return pickup_array, hardcoded_recipe.item_id, quality_sum
+            candidates.append(hardcoded_recipe.item_id)
         else:
-            return pickup_array, hardcoded_recipe.item_id, quality_sum
+            return pickup_array, [hardcoded_recipe.item_id], quality_sum
 
     pool_weights = {
         0: 1,
@@ -100,13 +94,13 @@ def get_result(
         selected_item_id = bisect.bisect_right(cumulative_weights, remains)
 
         item_config = items[selected_item_id]
-        if item_config.achievement_id is None or is_achievement_unlocked(
-            item_config.achievement_id
-        ):
-            return pickup_array, selected_item_id, quality_sum
+        candidates.append(selected_item_id)
+        if item_config.achievement_id is None:
+            return pickup_array, candidates, quality_sum
 
     # return breakfast if above fails
-    return pickup_array, 25, quality_sum
+    candidates.append(25)
+    return pickup_array, candidates, quality_sum
 
 
 def print_progress(current: int, total: int):
@@ -117,9 +111,8 @@ def print_progress(current: int, total: int):
 
 def find_item_id(platform: str, game_version: str, seed_string: str, pickup_list: List[int]) -> None:
     seed = string_to_seed(seed_string)
-    _, item_id, quality_sum = get_result(platform, game_version, pickup_list, seed)
+    _, item_ids, quality_sum = get_result(platform, game_version, pickup_list, seed)
     items = ItemListEntry.load_item_list(platform, game_version)
-    item = items[item_id]
     print(f"SEED: {seed_string}")
     print()
     print(f"[ {PICKUP_LIST[pickup_list[0]].pickup_name}")
@@ -130,13 +123,17 @@ def find_item_id(platform: str, game_version: str, seed_string: str, pickup_list
 
     quality_min = 0
     quality_max = 1
-    for min_score, quality_min, quality_max in reversed(QUALITY_RANGES):
+    for min_score, quality_min, quality_max in reversed(get_quality_ranges(platform, game_version)):
         if quality_sum >= min_score:
             break
 
     print(
-        f"(total {quality_sum}, {'★' * quality_min + '☆' * (4 - quality_min)}-{'★' * quality_max + '☆' * (4 - quality_max)}) -> {item.name} (id {item.item_id} {item.quality_str})"
+        f"(total {quality_sum}, {'★' * quality_min + '☆' * (4 - quality_min)}-{'★' * quality_max + '☆' * (4 - quality_max)})"
     )
+    print("Candidates:")
+    for item_id in item_ids:
+        item = items[item_id]
+        print(f"{item.name} (id {item.item_id} {item.quality_str})")
 
 
 def find_items_for_pickups(
@@ -158,7 +155,7 @@ def find_items_for_pickups(
             chunksize=32,
         )
         for result in results:
-            craftable_set.add(result[1])
+            craftable_set.add(result[1][0])
 
     print(f"SEED: {seed_string}")
     print()
@@ -195,7 +192,7 @@ def find_recipes_for_item(
             chunksize=32,
         )
         for result in results:
-            if item_id == result[1]:
+            if item_id == result[1][0]:
                 item_recipes.append(result)
 
     items = ItemListEntry.load_item_list(platform, game_version)
@@ -232,7 +229,7 @@ def find_uncraftable_items(
             chunksize=32,
         )
         for result in results:
-            uncraftable_set.discard(result[1])
+            uncraftable_set.discard(result[1][0])
 
     print(f"SEED: {seed_string}")
     print()

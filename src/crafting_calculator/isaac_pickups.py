@@ -15,6 +15,7 @@ class PickupEntry:
         self.quality = quality
 
 
+# Mapping is as below - extracted from game binary
 # hsbegBr.oOQ/|%v^V123[(>?~${4_X
 PICKUP_LIST = [
     None,
