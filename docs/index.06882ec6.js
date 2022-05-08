@@ -839,7 +839,12 @@ const ee = M({
                         (e.selectedItem = l), (e.selectedItemName = h(l)), (o.className = `m-4 sprite i${l}`);
                     }).catch((err) => {
                         console.error(err);
-                        b(), (e.showSeedError = !0), (e.seedErrorText = "Invalid seed! Please enter the one from your pause menu in-game");
+                        b(), (e.showSeedError = !0);
+                        if (err.name === "AbortError") {
+                            e.seedErrorText = "Timeout when fetching needed game files.";
+                        } else {
+                            e.seedErrorText = err;
+                        }
                     })
                 },
                 r = (o) => {

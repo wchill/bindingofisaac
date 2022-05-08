@@ -141,6 +141,15 @@ let _item_data = {}
 let _version_data = undefined;
 
 
+const fetchTimeout = (url, ms, { signal, ...options } = {}) => {
+    const controller = new AbortController();
+    const promise = fetch(url, { signal: controller.signal, ...options });
+    if (signal) signal.addEventListener("abort", () => controller.abort());
+    const timeout = setTimeout(() => controller.abort(), ms);
+    return promise.finally(() => clearTimeout(timeout));
+};
+
+
 async function GetItemData() {
     let version_data = await GetVersionData();
     let default_version = "#" + version_data.default;
@@ -148,7 +157,7 @@ async function GetItemData() {
     let version = (location.hash || default_version).substr(1);
     if (_item_data[version] === undefined) {
         console.log(`Fetching game data for ${version}`);
-        let versioned_data = await fetch(`gamedata/${version}/data.json`);
+        let versioned_data = await fetchTimeout(`gamedata/${version}/data.json`, 5000);
         _item_data[version] = await versioned_data.json();
     }
     return _item_data[version];
@@ -158,7 +167,7 @@ async function GetItemData() {
 async function GetVersionData() {
     if (_version_data === undefined) {
         console.log(`Fetching version data`);
-        let versioned_data = await fetch(`gamedata/versions.json`);
+        let versioned_data = await fetchTimeout(`gamedata/versions.json`, 5000);
         _version_data = await versioned_data.json();
     }
     return _version_data;
@@ -347,7 +356,7 @@ async function get_result(input_array, currentSeed) {
         )
     }
     if (currentSeed === 0) {
-        throw "Invalid seed"
+        throw "Invalid seed! Make sure your seed is correct."
     }
 
     for (let item_i = 0; item_i < 0x1F; item_i++) {
