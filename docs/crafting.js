@@ -188,8 +188,8 @@ function GetCalculatorVersion(version_data) {
 function GetItemPoolData(itemdata, item_pool_id) {
     let item_pool_data = itemdata.itempools;
 
-    console.assert(item_pool_data["items"][item_pool_id] !== undefined)
-    return item_pool_data["items"][item_pool_id]
+    console.assert(item_pool_data[item_pool_id]["items"] !== undefined)
+    return item_pool_data[item_pool_id]["items"]
 }
 
 function GetItemConfig(itemdata, item_id) {
@@ -302,7 +302,7 @@ async function get_result(input_array, currentSeed) {
     let hardcoded_recipe_id = GetHardcodedRecipe(itemdata, sorted_items);
 
     if (ShouldUseHardcodedRecipe(calculatorVersion, itemdata, hardcoded_recipe_id)) {
-        return hardcoded_recipe_id
+        return hardcoded_recipe_id;
     }
 
     let getMinMaxQuality = GetMinMaxQualityImpl(calculatorVersion);
@@ -389,6 +389,7 @@ async function get_result(input_array, currentSeed) {
             let quality_max = quality_bounds.max;
 
             let item_pools = GetItemPoolData(itemdata, weight_list[weight_select_i].id)
+            console.log(item_pools)
             for (let item_pool_i = 0; item_pool_i < item_pools.length; item_pool_i++) {
                 // if(some_address == 0){//v53, dword_1779AEC
                 //     //not handled
@@ -447,6 +448,7 @@ async function get_result(input_array, currentSeed) {
             remains -= collectible_list[current_select]
         }
 
+        console.log(selected);
         if (IsItemUnlocked(itemdata, selected)) {
             return selected;
         }

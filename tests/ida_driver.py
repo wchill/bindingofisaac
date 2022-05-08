@@ -8,35 +8,8 @@ import idc
 import ida_idd
 import struct
 
-XREF_TYPE2STR = {idaapi.fl_U: "User Defined",
-                 idaapi.fl_CF: "Far Call",
-                 idaapi.fl_CN: "Near Call",
-                 idaapi.fl_JF: "Far Jump",
-                 idaapi.fl_JN: "Near Jump"}
 
-
-def find_xrefs_from(func_ea):
-    xrefs = []
-
-    for item in idautils.FuncItems(func_ea):
-
-        ALL_XREFS = 0
-        for ref in idautils.XrefsFrom(item, ALL_XREFS):
-
-            if ref.type not in XREF_TYPE2STR:
-                continue
-
-            if ref.to in idautils.FuncItems(func_ea):
-                continue
-
-            disas = idc.GetDisasm(item)
-            # curr_xref = XrefFrom( item, ref.to, ref.type, disas )
-            xrefs.append(ref)
-
-    return xrefs
-
-
-def locate_func():
+def locate_crafting_func():
     str_opts = ida_strlist.get_strlist_options()
     str_opts.minlen = 10
     str_opts.display_only_existing_strings = True
@@ -78,32 +51,7 @@ def locate_seed_ptr(func):
     raise ValueError("Couldn't find ptr")
 
 
-def scan_for_item_unlock(craft_func):
-    xrefs = find_xrefs_from(craft_func.start_ea)
-    xrefs = {xref.to for xref in xrefs}
-
-    candidates = []
-    for func_ea in xrefs:
-        func = idaapi.get_func(func_ea)
-        if func is None:
-            continue
-        ea = func.start_ea
-        while ea < func.end_ea:
-            ea = idc.next_head(ea)
-            mnem = idc.print_insn_mnem(ea)
-            if mnem != "cmp":
-                continue
-            if not (idc.get_operand_type(ea, 0) == 1 and idc.get_operand_type(ea, 1) == 5):
-                continue
-            if not idc.get_operand_value(ea, 1) == 0x27e:
-                continue
-            candidates.append(func_ea)
-            break
-    assert len(candidates) == 1, "Found either zero or more than one candidate"
-    return candidates[0]
-
-
-def scan_for_achievement_array(craft_func):
+def locate_achievement_array(craft_func):
     ea = craft_func.start_ea
     while ea < craft_func.end_ea:
         ea = idc.next_head(ea)
@@ -117,9 +65,10 @@ def scan_for_achievement_array(craft_func):
         test_ea = ea
         for _ in range(10):
             test_ea = idc.next_head(test_ea)
-            if not (idc.print_insn_mnem(test_ea) == "mov" and idc.get_operand_type(test_ea,
-                                                                                   0) == 1 and idc.get_operand_type(
-                    test_ea, 1) == 2):
+            mnem = idc.print_insn_mnem(test_ea)
+            op_type_1 = idc.get_operand_type(test_ea, 0)
+            op_type_2 = idc.get_operand_type(test_ea, 1)
+            if not (mnem == "mov" and op_type_1 == 1 and op_type_2 == 2):
                 continue
             base_addr = idc.get_operand_value(test_ea, 1)
             offset = idc.get_operand_value(idc.next_head(test_ea), 0)
@@ -139,23 +88,19 @@ def patch_func(func, retval, argc):
 
 
 def build_test_cases():
-    craft_func = locate_func()
+    craft_func = locate_crafting_func()
     seed_ptr = locate_seed_ptr(craft_func)
-    # item_unlock_func = scan_for_item_unlock(craft_func)
-    achievement_ptr = scan_for_achievement_array(craft_func)
+    achievement_ptr = locate_achievement_array(craft_func)
 
     # Set up Appcall stuff
     decl = idc.parse_decl('int __stdcall get_crafting_output(byte*)', 0)
     idc.apply_type(craft_func.start_ea, decl, 0)
     buf = ida_idd.Appcall.buffer(b'\x00' * 8)
 
-    # Write seed
-
-    with open(r"bindingofisaac/tests/test_cases/binary_inputs.json", "r") as f:
+    with open(r"bindingofisaac/tests/test_cases/test_cases.json", "r") as f:
         cases = json.load(f)
 
     output_cases = []
-    # patch_func(item_unlock_func, 1, 1)
     for case in cases:
         seed = case["seed"]
         pickups = case["pickups"]
