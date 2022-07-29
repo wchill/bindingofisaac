@@ -150,11 +150,7 @@ const fetchTimeout = (url, ms, { signal, ...options } = {}) => {
 };
 
 
-async function GetItemData() {
-    let version_data = await GetVersionData();
-    let default_version = "#" + version_data.default;
-
-    let version = (location.hash || default_version).substr(1);
+async function GetItemData(version) {
     if (_item_data[version] === undefined) {
         console.log(`Fetching game data for ${version}`);
         let versioned_data = await fetchTimeout(`gamedata/${version}/data.json`, 5000);
@@ -174,9 +170,7 @@ async function GetVersionData() {
 }
 
 
-function GetCalculatorVersion(version_data, version_hash) {
-    let default_version = "#" + version_data.default;
-    let version_str = (version_hash || default_version).substring(1);
+function GetCalculatorVersion(version_data, version_str) {
     let version_components = version_str.split("/");
     let platform = version_components[0];
     let version = version_components[1];
@@ -293,11 +287,11 @@ function ShouldUseHardcodedRecipe(calculator_version, itemdata, item_id) {
     return IsItemUnlocked(itemdata, item_id);
 }
 
-async function get_result(input_array, currentSeed, versionhash) {
-    let itemdata = await GetItemData();
+async function get_result(input_array, currentSeed, version_hash) {
+    let version_str = version_hash.substring(1);
     let versiondata = await GetVersionData();
-    if (versionhash === undefined) versionhash = location.hash;
-    let calculatorVersion = GetCalculatorVersion(versiondata, versionhash);
+    let itemdata = await GetItemData(version_str);
+    let calculatorVersion = GetCalculatorVersion(versiondata, version_str);
 
     let sorted_items = bucket_sort_list_toint64(input_array);
     let hardcoded_recipe_id = GetHardcodedRecipe(itemdata, sorted_items);

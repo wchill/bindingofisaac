@@ -19,7 +19,6 @@ function combRep(arr, l) {
 
 self.addEventListener('message', async function (MessageEvent) {
   //let itemId = get_result(MessageEvent.data.charArr, str2seed(MessageEvent.data.seed))
-
   let t0 = this.performance.now();
 
   // let quality1 = [1, 7, 8]

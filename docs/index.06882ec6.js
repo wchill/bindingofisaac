@@ -835,7 +835,7 @@ const ee = M({
                         return;
                     }
                     e.showSeedError = !1;
-                    get_result(m, str2seed(e.seed)).then((l) => {
+                    get_result(m, str2seed(e.seed), document.location.hash).then((l) => {
                         (e.selectedItem = l), (e.selectedItemName = h(l)), (o.className = `m-4 sprite i${l}`);
                     }).catch((err) => {
                         console.error(err);
