@@ -137,13 +137,14 @@ function RNG_Next(num, offset_id) {
     num = num ^ ((num >>> offset_c) & 0xFFFFFFFF)
     return num >>> 0 /* to unsigned */
 }
+
 let _item_data = {}
 let _version_data = undefined;
 
 
-const fetchTimeout = (url, ms, { signal, ...options } = {}) => {
+const fetchTimeout = (url, ms, {signal, ...options} = {}) => {
     const controller = new AbortController();
-    const promise = fetch(url, { signal: controller.signal, ...options });
+    const promise = fetch(url, {signal: controller.signal, ...options});
     if (signal) signal.addEventListener("abort", () => controller.abort());
     const timeout = setTimeout(() => controller.abort(), ms);
     return promise.finally(() => clearTimeout(timeout));
@@ -156,7 +157,6 @@ async function GetItemData() {
 
     let version = (location.hash || default_version).substr(1);
     if (_item_data[version] === undefined) {
-        console.log(`Fetching game data for ${version}`);
         let versioned_data = await fetchTimeout(`gamedata/${version}/data.json`, 5000);
         _item_data[version] = await versioned_data.json();
     }
@@ -166,7 +166,6 @@ async function GetItemData() {
 
 async function GetVersionData() {
     if (_version_data === undefined) {
-        console.log(`Fetching version data`);
         let versioned_data = await fetchTimeout(`gamedata/versions.json`, 5000);
         _version_data = await versioned_data.json();
     }
@@ -174,9 +173,9 @@ async function GetVersionData() {
 }
 
 
-function GetCalculatorVersion(version_data, version_hash) {
+function GetCalculatorVersion(version_data) {
     let default_version = "#" + version_data.default;
-    let version_str = (version_hash || default_version).substring(1);
+    let version_str = (location.hash || default_version).substr(1);
     let version_components = version_str.split("/");
     let platform = version_components[0];
     let version = version_components[1];
@@ -282,27 +281,26 @@ function GetMinMaxQualityImpl(calculator_version) {
     return GetMinMaxQualityNew;
 }
 
-function IsItemUnlocked(itemdata, item_id) {
+function IsItemUnlocked(itemdata, item_id, unlocked) {
     let item_config = GetItemConfig(itemdata, item_id);
-    return (item_config.achievement_id === undefined || GetAchievementUnlocked(item_config["achievement_id"]));
+    return (item_config.achievement_id === undefined || unlocked);
 }
 
-function ShouldUseHardcodedRecipe(calculator_version, itemdata, item_id) {
+function ShouldUseHardcodedRecipe(calculator_version, itemdata, item_id, unlocked) {
     if (item_id === undefined) return false;
     if (calculator_version < 3) return true;
-    return IsItemUnlocked(itemdata, item_id);
+    return IsItemUnlocked(itemdata, item_id, unlocked);
 }
 
-async function get_result(input_array, currentSeed, versionhash) {
+async function get_result(input_array, currentSeed, unlocked) {
     let itemdata = await GetItemData();
     let versiondata = await GetVersionData();
-    if (versionhash === undefined) versionhash = location.hash;
-    let calculatorVersion = GetCalculatorVersion(versiondata, versionhash);
+    let calculatorVersion = GetCalculatorVersion(versiondata);
 
     let sorted_items = bucket_sort_list_toint64(input_array);
     let hardcoded_recipe_id = GetHardcodedRecipe(itemdata, sorted_items);
 
-    if (ShouldUseHardcodedRecipe(calculatorVersion, itemdata, hardcoded_recipe_id)) {
+    if (ShouldUseHardcodedRecipe(calculatorVersion, itemdata, hardcoded_recipe_id, unlocked)) {
         return hardcoded_recipe_id;
     }
 
@@ -374,7 +372,6 @@ async function get_result(input_array, currentSeed, versionhash) {
     }
 
     let all_weight = 0.0
-    // console.log(weight_list)
     if (weight_list.length > 0) {
         for (let weight_select_i = 0; weight_select_i < weight_list.length; weight_select_i++) {
             if (weight_list[weight_select_i].weight <= 0.0) {
@@ -448,13 +445,50 @@ async function get_result(input_array, currentSeed, versionhash) {
             remains -= collectible_list[current_select]
         }
 
-        if (IsItemUnlocked(itemdata, selected)) {
+        if (IsItemUnlocked(itemdata, selected, unlocked)) {
             return selected;
         }
     }
     return 25;
 }
 
-if (typeof exports !== 'undefined') {
-    module.exports = { get_result };
-}
+const fs = require("fs");
+const asyncFs = fs.promises;
+let location;
+let fetch;
+
+
+describe('Test using various frameworks', () => {
+    let version = "pc/v1.7.8a";
+
+    fetch = jest.fn((url, options) => {
+        return Promise.resolve(
+            {
+                json: () => asyncFs.readFile("./" + url, "utf8").then((data, err) => {
+                    if (err) throw err;
+                    return JSON.parse(data);
+                })
+            })
+    });
+    location = {hash: `#${version}`};
+    let testCases = JSON.parse(fs.readFileSync("../tests/test_cases/pc178.json", 'utf8'));
+
+    for (let i = 0; i < testCases.length; i++) {
+        ((testCase) => {
+                let pickups = testCase["pickups"];
+                let seed_str = testCase["seed_str"];
+                let seed = testCase["seed"];
+                let output = testCase["output"];
+                let unlocked = testCases[i]["unlocked"];
+                let achievement_id = testCases[i]["achievement_id"];
+                if (!achievement_id) {
+
+                it(`should calculate ${pickups} -> ${output} with seed ${seed_str} on ${version} (unlocked=${unlocked})`, async () => {
+                    let item_id = await get_result(pickups, seed, unlocked);
+                    expect(item_id).toEqual(output);
+                })
+                }
+            }
+        )(testCases[i]);
+    }
+});

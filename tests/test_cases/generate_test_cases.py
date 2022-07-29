@@ -19,7 +19,12 @@ def pickup_names_to_list(pickup_list):
 
 
 class IsaacTestCase:
-    def __init__(self, seed: str, pickups: Union[List[int], List[str]], expected_output: Optional[int]):
+    def __init__(
+        self,
+        seed: str,
+        pickups: Union[List[int], List[str]],
+        expected_output: Optional[int],
+    ):
         self.seed = seed
         if isinstance(pickups[0], str):
             pickups = pickup_names_to_list(pickups)
@@ -30,12 +35,14 @@ class IsaacTestCase:
 def make_static_test_cases():
     output_cases = []
     for case in STATIC_TEST_CASES:
-        output_cases.append({
-            "seed_str": case[0],
-            "seed": string_to_seed(case[0]),
-            "pickups": case[1],
-            "type": "static",
-        })
+        output_cases.append(
+            {
+                "seed_str": case[0],
+                "seed": string_to_seed(case[0]),
+                "pickups": case[1],
+                "type": "static",
+            }
+        )
 
     return output_cases
 
@@ -50,13 +57,15 @@ def make_test_cases_from_recipes():
     for recipe in recipes.values():
         for seed in seeds:
             achievement_id = item_list[recipe.item_id].achievement_id
-            output_cases.append({
-                "seed_str": seed,
-                "seed": string_to_seed(seed),
-                "pickups": recipe.pickups,
-                "achievement_id": achievement_id,
-                "type": "recipe",
-            })
+            output_cases.append(
+                {
+                    "seed_str": seed,
+                    "seed": string_to_seed(seed),
+                    "pickups": recipe.pickups,
+                    "achievement_id": achievement_id,
+                    "type": "recipe",
+                }
+            )
 
     return output_cases
 
@@ -65,15 +74,17 @@ def make_random_test_cases():
     output_cases = []
     seeds = ["28rynmmm", "7bvmyw7d", "g0rgkxtq"]
 
-    for seed in seeds:
-        for _ in range(200):
+    for _ in range(200):
+        for seed in seeds:
             pickups = random.choices(list(range(1, 30)), k=8)
-            output_cases.append({
-                "seed_str": seed,
-                "seed": string_to_seed(seed),
-                "pickups": pickups,
-                "type": "random",
-            })
+            output_cases.append(
+                {
+                    "seed_str": seed,
+                    "seed": string_to_seed(seed),
+                    "pickups": pickups,
+                    "type": "random",
+                }
+            )
 
     return output_cases
 

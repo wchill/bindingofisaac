@@ -884,7 +884,7 @@ const ee = M({
                         } else e.seededComponents.push(o);
                 },
                 I = () => {
-                    !e.seed || ((e.isLoading = !0), (e.combinations = null), (e.showGenerateError = !1), (e.time = null), (e.seededRecipes = []), v.postMessage({ seed: e.seed, components: [...e.seededComponents] }));
+                    !e.seed || ((e.isLoading = !0), (e.combinations = null), (e.showGenerateError = !1), (e.time = null), (e.seededRecipes = []), v.postMessage({ seed: e.seed, components: [...e.seededComponents], version: document.location.hash }));
                 };
             return (
                 (v.onmessage = function (o) {

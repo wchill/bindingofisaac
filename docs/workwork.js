@@ -29,14 +29,15 @@ self.addEventListener('message', async function (MessageEvent) {
 
   let result = combRep(MessageEvent.data.components, 8)
   console.log(`permutations: ${result.length}`);
-  const seed = str2seed(MessageEvent.data.seed)
+  const seed = str2seed(MessageEvent.data.seed);
+  const version = MessageEvent.data.version;
 
   var i = 0, len = result.length;
   var recipeArr = [];
 
   // do the magic
   while (i < len) {
-    let id = await get_result(result[i], seed);
+    let id = await get_result(result[i], seed, version);
     let itemIndex = recipeArr.findIndex(e => e.x === id);
 
     if (itemIndex > -1) {

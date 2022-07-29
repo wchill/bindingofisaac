@@ -1,0 +1,11 @@
+{
+  "author": "",
+  "description": "",
+  "license": "ISC",
+  "main": "crafting.js",
+  "name": "docs",
+  "scripts": {
+    "test": "jest"
+  },
+  "version": "1.0.0"
+}
